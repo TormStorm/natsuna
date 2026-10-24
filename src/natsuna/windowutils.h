@@ -22,8 +22,9 @@ public:
     explicit NatsunaWindowUtils(QObject *parent = nullptr);
 
     // Keeps the window above all other windows ("Always on Top").
-    // On KDE Plasma this uses KWin's own "Keep Above Others" state, which works
-    // on both Wayland and X11. Elsewhere it falls back to Qt's stay-on-top hint.
+    // On KDE Plasma this uses KWin's "Keep Above Others" plus a window rule that
+    // puts the player in the Overlay layer, so it also stays above focused
+    // fullscreen windows. Elsewhere it falls back to Qt's stay-on-top hint.
     Q_INVOKABLE void setKeepAbove(QWindow *window, bool keepAbove);
 
     // Hides the title bar and frame (auto-hide mode).
@@ -34,6 +35,10 @@ public:
 private:
     // Runs a small KWin script; returns false when KWin isn't available
     bool runKWinScript(const QString &name, const QString &body);
+
+    // Adds (or removes) a KWin window rule that puts the player window in the
+    // Overlay layer, above even focused fullscreen windows.
+    bool setOverlayLayerRule(bool enabled);
 };
 
 #endif // NATSUNA_WINDOWUTILS_H

@@ -57,7 +57,7 @@ They all still work through their keyboard shortcuts, and you can find and rebin
 
 **Auto-hide interface.** View → Auto-hide Interface (Ctrl+H) hides the menu bar, toolbar and control bar a couple of seconds after the mouse stops moving, so only the video shows. It's handy with Always on Top for keeping a small video over other windows. Move the mouse over the player and everything fades back in, drawn over the video, so the picture never jumps or resizes. The controls stay up while you're using a menu. The window's title bar and frame are hidden too (like KDE's "No Titlebar and Frame"). Drag the video or the top strip to move the window, and drag any edge or corner to resize it. It's also in Preferences → General and is remembered between sessions.
 
-**Always on Top.** View → Always on Top keeps the player above other windows. On KDE Plasma it uses KWin's own "Keep Above Others", so it works on Wayland as well as X11. It's remembered between sessions.
+**Always on Top.** View → Always on Top keeps the player above other windows, including a focused fullscreen video or game. On KDE Plasma it uses KWin's "Keep Above Others" together with a window rule that puts the player in KWin's Overlay layer (you'll see it as "Natsuna: Always on Top" under System Settings → Window Rules while it's on). It works on Wayland and X11, and it's remembered between sessions.
 
 ### Keyboard shortcuts
 

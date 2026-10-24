@@ -15,6 +15,9 @@
 #include <QTemporaryFile>
 #include <QWindow>
 
+#include <KConfig>
+#include <KConfigGroup>
+
 #if HAVE_DBUS
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
@@ -56,6 +59,9 @@ for (const w of windows) {
                                .arg(keepAbove ? u"true"_s : u"false"_s);
 
     if (runKWinScript(u"natsuna-keepabove"_s, script)) {
+        // "Keep Above Others" alone loses to a focused fullscreen window, which
+        // KWin stacks in a higher layer; the Overlay layer rule beats that too.
+        setOverlayLayerRule(keepAbove);
         return;
     }
 
@@ -102,6 +108,49 @@ for (const w of windows) {
     if (wasVisible && !window->isVisible()) {
         window->show();
     }
+}
+
+bool NatsunaWindowUtils::setOverlayLayerRule(bool enabled)
+{
+#if HAVE_DBUS
+    auto bus = QDBusConnection::sessionBus();
+    if (!bus.isConnected() || !bus.interface() || !bus.interface()->isServiceRegistered(u"org.kde.KWin"_s)) {
+        return false;
+    }
+
+    // Same format as rules made in System Settings -> Window Management -> Window Rules
+    KConfig rules(u"kwinrulesrc"_s, KConfig::NoGlobals);
+    const QString groupName = u"natsuna-always-on-top"_s;
+    const bool exists = rules.hasGroup(groupName);
+    if (enabled == exists) {
+        return true;
+    }
+
+    if (enabled) {
+        KConfigGroup rule(&rules, groupName);
+        rule.writeEntry("Description", u"Natsuna: Always on Top (managed by Natsuna)"_s);
+        // the app id on Wayland is io.github.tormstorm.natsuna, the class on X11 is natsuna
+        rule.writeEntry("wmclass", u"natsuna"_s);
+        rule.writeEntry("wmclassmatch", 2); // substring
+        // the player window, not the Preferences window
+        rule.writeEntry("title", u"^(?!Preferences)"_s);
+        rule.writeEntry("titlematch", 3); // regular expression
+        rule.writeEntry("types", 1); // normal windows
+        rule.writeEntry("layer", u"overlay"_s);
+        rule.writeEntry("layerrule", 2); // force
+    } else {
+        rules.deleteGroup(groupName);
+    }
+    rules.sync();
+
+    // ask KWin to reload its rules; it re-applies them to open windows
+    auto reconfigure = QDBusMessage::createMethodCall(u"org.kde.KWin"_s, u"/KWin"_s, u"org.kde.KWin"_s, u"reconfigure"_s);
+    bus.call(reconfigure);
+    return true;
+#else
+    Q_UNUSED(enabled)
+    return false;
+#endif
 }
 
 bool NatsunaWindowUtils::runKWinScript(const QString &name, const QString &body)
