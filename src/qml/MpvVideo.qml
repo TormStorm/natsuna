@@ -170,14 +170,15 @@ MpvItem {
         }
     }
 
+    // Natsuna: dropping files on the video plays them. (Haruna split the
+    // window into "Add to Playlist" / "Play Now" zones; to add files to the
+    // playlist, drop them on the playlist panel instead.)
     DropArea {
         id: dropArea
 
         property bool dragMedia: false
         property bool dragSubtitle: false
         property int subtitleIndex: -1
-        property bool mouseOnTopPart: containsDrag && dragMedia && drag.y <= height * 0.25
-        property bool mouseOnBottomPart: containsDrag && dragMedia && drag.y > height * 0.25
 
         anchors.fill: parent
         keys: ["text/uri-list"]
@@ -205,140 +206,19 @@ MpvItem {
 
         onDropped: function (drop) {
             if (dragSubtitle && !dragMedia) {
-                // If dragging multiple items and none of them is a media, and if there is a subtitle, load it
+                // only subtitle files were dropped: load the subtitle for the current video
                 root.addSubtitles(drop.urls[subtitleIndex])
-                return
-            }
-            if (mouseOnTopPart) {
-                // Append to playlist
-                root.filesDropped(drop.urls, PlaylistModel.Append)
-                return
-            }
-            if (mouseOnBottomPart) {
-                // Clear the playlist
-                let isDir = PathUtils.isDir(drop.urls[0])
-                if (drop.urls.length > 1 || isDir) {
-                    // More than one file/folder dragged. Or at least one folder dragged.
-                    root.filesDropped(drop.urls, PlaylistModel.Clear)
-                } else {
-                    // One file dragged
-                    root.window.openFile(drop.urls[0], RecentFilesModel.OpenedFrom.ExternalApp)
-                }
-            }
-        }
-
-        Rectangle {
-            id: topDropRect
-
-            visible: dropArea.containsDrag
-            color: "transparent"
-            width: parent.width
-            height: parent.height * 0.25
-            radius: Kirigami.Units.cornerRadius
-
-            anchors {
-                top: dropArea.top
-                left: dropArea.left
-                right: dropArea.right
-                margins: Kirigami.Units.smallSpacing
+            } else if (drop.urls.length > 1 || PathUtils.isDir(drop.urls[0])) {
+                // several files, or a folder: play them as the new playlist
+                root.filesDropped(drop.urls, PlaylistModel.Clear)
+            } else {
+                // one file: play it
+                root.window.openFile(drop.urls[0], RecentFilesModel.OpenedFrom.ExternalApp)
             }
 
-            border {
-                color: dropArea.mouseOnTopPart
-                       ? Kirigami.Theme.activeTextColor
-                       : "transparent"
-                width: dropArea.mouseOnTopPart ? 3 : 0
-            }
-
-            Label {
-                anchors.fill: parent
-                anchors.centerIn: parent
-
-                text: KI18n.i18nc("@info:drag&drop append items", "Add to Playlist")
-                elide: Text.ElideRight
-                color: Kirigami.Theme.textColor
-                opacity: dropArea.mouseOnTopPart ? 1 : 0.7
-
-                font.pointSize: dropArea.calculateAdaptiveFontSize(12, 30, 400, 1200)
-                font.bold: true
-                horizontalAlignment: Qt.AlignCenter
-                verticalAlignment: Qt.AlignVCenter
-                layer.enabled: true
-                layer.effect: DropShadow {
-                    cached: true
-                    verticalOffset: 1
-                    horizontalOffset: 1
-                    color: Kirigami.Theme.backgroundColor
-                    radius: 12
-                    spread: 0.4
-                    samples: 20
-                }
-            }
-        }
-
-        Rectangle {
-            id: bottomDropRect
-
-            visible: dropArea.containsDrag
-            width: parent.width
-            color: "transparent"
-            radius: Kirigami.Units.cornerRadius
-
-            anchors {
-                top: topDropRect.bottom
-                left: dropArea.left
-                right: dropArea.right
-                bottom: dropArea.bottom
-                margins: Kirigami.Units.smallSpacing
-            }
-
-            border {
-                color: dropArea.mouseOnBottomPart
-                       ? Kirigami.Theme.activeTextColor
-                       : "transparent"
-                width: dropArea.mouseOnBottomPart ? 3 : 0
-            }
-
-            Label {
-                anchors.fill: parent
-                anchors.centerIn: parent
-
-                text: KI18n.i18nc("@info:drag&drop play now", "Play Now")
-                elide: Text.ElideRight
-                color: Kirigami.Theme.textColor
-                opacity: dropArea.mouseOnBottomPart ? 1 : 0.7
-
-                font.pointSize: dropArea.calculateAdaptiveFontSize(18, 36, 400, 1200)
-                font.bold: true
-                horizontalAlignment: Qt.AlignCenter
-                verticalAlignment: Qt.AlignVCenter
-                layer.enabled: true
-                layer.smooth: true
-                layer.effect: DropShadow {
-                    cached: true
-                    verticalOffset: 1
-                    horizontalOffset: 1
-                    color: Kirigami.Theme.backgroundColor
-                    radius: 12
-                    spread: 0.4
-                    samples: 20
-                }
-            }
-        }
-
-        function calculateAdaptiveFontSize(minPoint, maxPoint, maxWinHeight, maxWinWidth) {
-            let width = root.window.width
-            let height = root.window.height
-            let cappedWidth = Math.min(Math.max(root.window.minimumWidth, width), maxWinWidth)
-            let cappedHeight = Math.min(Math.max(root.window.minimumHeight, height), maxWinHeight)
-            const widthScale = maxWinWidth - root.window.minimumWidth
-            const heightScale = maxWinHeight - root.window.minimumHeight
-            const pointScale = maxPoint - minPoint
-
-            // calculate a font point size separately by considering both current width and height
-            let wPoint = (((cappedWidth - root.window.minimumWidth) * pointScale) / widthScale) + minPoint
-            let hPoint = (((cappedHeight - root.window.minimumHeight) * pointScale) / heightScale) + minPoint
-            return Math.min(wPoint, hPoint)
+            dragMedia = false
+            dragSubtitle = false
+            subtitleIndex = -1
         }
     }
 
