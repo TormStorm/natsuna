@@ -8,6 +8,7 @@
 #include "mpvitem.h"
 
 #include <QApplication>
+#include <QColor>
 #include <QCommandLineParser>
 #include <QDir>
 #include <QTimer>
@@ -163,7 +164,10 @@ void MpvItem::initProperties()
     setProperty(MpvProperties::self()->SubtitleFont, SubtitlesSettings::fontFamily());
     setProperty(MpvProperties::self()->SubtitleFontSize, SubtitlesSettings::fontSize());
     setProperty(MpvProperties::self()->SubtitleColor, SubtitlesSettings::fontColor());
-    setProperty(MpvProperties::self()->SubtitleShadowColor, SubtitlesSettings::shadowColor());
+    // Natsuna: the shadow / background box color with its opacity setting applied
+    QColor shadowColor(SubtitlesSettings::shadowColor());
+    shadowColor.setAlphaF(SubtitlesSettings::shadowOpacity() / 100.0);
+    setProperty(MpvProperties::self()->SubtitleShadowColor, shadowColor.name(QColor::HexArgb));
     setProperty(MpvProperties::self()->SubtitleShadowOffset, SubtitlesSettings::shadowOffset());
     setProperty(MpvProperties::self()->SubtitleBorderColor, SubtitlesSettings::borderColor());
     setProperty(MpvProperties::self()->SubtitleBorderSize, SubtitlesSettings::borderSize());

@@ -172,7 +172,10 @@ ApplicationWindow {
             mpv.setProperty(MpvProperties.SubtitleColor, SubtitlesSettings.fontColor)
         }
         function onShadowColorChanged() {
-            mpv.setProperty(MpvProperties.SubtitleShadowColor, SubtitlesSettings.shadowColor)
+            appWindow.applySubtitleShadowColor()
+        }
+        function onShadowOpacityChanged() {
+            appWindow.applySubtitleShadowColor()
         }
         function onShadowOffsetChanged() {
             mpv.setProperty(MpvProperties.SubtitleShadowOffset, SubtitlesSettings.shadowOffset)
@@ -451,6 +454,15 @@ ApplicationWindow {
                 m_settingsLoader: settingsLoader
             }
         }
+    }
+
+    // Natsuna: shadow / background box color with the opacity setting applied,
+    // as mpv's #AARRGGBB
+    function applySubtitleShadowColor() : void {
+        const c = Qt.color(SubtitlesSettings.shadowColor)
+        const hex = v => Math.round(v * 255).toString(16).padStart(2, "0")
+        const alpha = Math.max(0, Math.min(100, SubtitlesSettings.shadowOpacity)) / 100
+        mpv.setProperty(MpvProperties.SubtitleShadowColor, `#${hex(alpha)}${hex(c.r)}${hex(c.g)}${hex(c.b)}`)
     }
 
     // Natsuna: no title bar and frame while auto-hide mode is on (windowed)

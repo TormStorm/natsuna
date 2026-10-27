@@ -172,7 +172,7 @@ SettingsBasePage {
                 ComboBox {
                     id: subtitleFont
 
-                    property string defaultFamily: "Sans Serif"
+                    property string defaultFamily: "Liberation Sans"
 
                     model: SystemUtils.getFonts()
                     Layout.preferredWidth: PrefStyle.fieldWidth * 1.4
@@ -313,7 +313,7 @@ SettingsBasePage {
 
             PrefRow {
                 title: KI18n.i18nc("@label:spinbox", "Shadow offset")
-                description: KI18n.i18nc("@info", "Set to 0 to turn the shadow off.")
+                description: KI18n.i18nc("@info", "With Background Box, the padding around the text. Otherwise the shadow distance; 0 turns the shadow off.")
 
                 SpinBox {
                     from: 0
@@ -329,11 +329,46 @@ SettingsBasePage {
 
             ColorRow {
                 title: KI18n.i18nc("@label:textbox", "Shadow color")
+                description: KI18n.i18nc("@info", "Also the color of the background box.")
                 color: SubtitlesSettings.shadowColor
-                defaultColor: "#80F0F0F0"
+                defaultColor: "#FF000000"
                 onColorEdited: function(color) {
                     SubtitlesSettings.shadowColor = color
                     SubtitlesSettings.save()
+                }
+            }
+
+            PrefRow {
+                id: shadowOpacityRow
+
+                title: KI18n.i18nc("@label:slider", "Shadow opacity")
+                description: KI18n.i18nc("@info", "How see-through the shadow or background box is. 0% is invisible, 100% is solid.")
+
+                function setOpacity(value) {
+                    SubtitlesSettings.shadowOpacity = value
+                    SubtitlesSettings.save()
+                }
+
+                Slider {
+                    id: shadowOpacitySlider
+
+                    from: 0
+                    to: 100
+                    stepSize: 5
+                    snapMode: Slider.SnapAlways
+                    value: SubtitlesSettings.shadowOpacity
+                    Layout.preferredWidth: PrefStyle.fieldWidth
+                    onMoved: shadowOpacityRow.setOpacity(Math.round(value))
+                }
+
+                Label {
+                    text: KI18n.i18nc("@label %1 is a percentage", "%1%", Math.round(shadowOpacitySlider.value))
+                    horizontalAlignment: Text.AlignRight
+                    Layout.preferredWidth: Kirigami.Units.gridUnit * 2.5
+                }
+
+                PrefResetButton {
+                    onClicked: shadowOpacityRow.setOpacity(50)
                 }
             }
         }
