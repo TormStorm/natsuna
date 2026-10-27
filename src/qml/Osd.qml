@@ -70,7 +70,8 @@ Item {
     }
 
     function titleMessage(text: string) : void {
-        if (!root.active || !text || parseInt(GeneralSettings.osdFontSize) === 0) {
+        // shown even when other on-screen messages are turned off (size 0)
+        if (!root.active || !text) {
             return
         }
 

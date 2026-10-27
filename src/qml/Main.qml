@@ -160,7 +160,7 @@ ApplicationWindow {
             mpv.setProperty(MpvProperties.SubtitleFont, SubtitlesSettings.fontFamily)
         }
         function onFontSizeChanged() {
-            mpv.setProperty(MpvProperties.SubtitleFontSize, SubtitlesSettings.fontSize)
+            appWindow.applySubtitleFontSize()
         }
         function onIsBoldChanged() {
             mpv.setProperty(MpvProperties.SubtitleBold, SubtitlesSettings.isBold)
@@ -390,9 +390,11 @@ ApplicationWindow {
         readonly property bool busy: topBarHover.hovered || overlayMenuBar.anyMenuOpen
 
         anchors.top: appWindow.contentItem.top
-        anchors.left: appWindow.contentItem.left
-        anchors.right: appWindow.contentItem.right
-        height: topBarColumn.implicitHeight
+        anchors.horizontalCenter: appWindow.contentItem.horizontalCenter
+        // same width as the floating control bar at the bottom
+        width: Math.min(appWindow.contentItem.width - Kirigami.Units.largeSpacing * (appWindow.contentItem.width < 600 ? 2 : 4),
+                        Kirigami.Units.gridUnit * 45)
+        height: topBarColumn.implicitHeight + Kirigami.Units.smallSpacing
         visible: active && opacity > 0
         opacity: active && footerItem.controlsShown ? 1 : 0
 
@@ -403,11 +405,23 @@ ApplicationWindow {
             }
         }
 
+        // a floating panel matching the bottom control bar: translucent, with
+        // rounded corners where it meets the video
+        Rectangle {
+            anchors.fill: parent
+            color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.85)
+            radius: Kirigami.Units.cornerRadius
+            topLeftRadius: 0
+            topRightRadius: 0
+            border.width: 1
+            border.color: Qt.alpha(Kirigami.Theme.textColor, 0.15)
+        }
+
         HoverHandler {
             id: topBarHover
         }
 
-        // drag the strip (menu bar or toolbar) to move the window, like a title bar
+        // drag the panel (menu bar or toolbar) to move the window, like a title bar
         DragHandler {
             target: null
             acceptedButtons: Qt.LeftButton
@@ -421,7 +435,13 @@ ApplicationWindow {
         Column {
             id: topBarColumn
 
-            width: parent.width
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                leftMargin: Kirigami.Units.smallSpacing
+                rightMargin: Kirigami.Units.smallSpacing
+            }
 
             MenuBar {
                 id: overlayMenuBar
@@ -434,7 +454,7 @@ ApplicationWindow {
                 width: parent.width
                 visible: GeneralSettings.showMenuBar
                 hoverEnabled: true
-                Kirigami.Theme.colorSet: Kirigami.Theme.Header
+                background: Item {}
 
                 NatsunaMediaMenu { id: overlayMediaMenu }
                 NatsunaPlaybackMenu { id: overlayPlaybackMenu; m_mpv: mpv }
@@ -447,11 +467,75 @@ ApplicationWindow {
             }
 
             Header {
+                id: overlayHeader
+
                 width: parent.width
                 inOverlay: true
+                background: Item {}
                 m_mpv: mpv
                 m_menuBarLoader: menuBarLoader
                 m_settingsLoader: settingsLoader
+            }
+        }
+    }
+
+    // Natsuna: subtitle size. mpv grows subtitles in direct proportion to the
+    // video's height, which makes them too big in fullscreen on large screens.
+    // The configured size applies at a 720 px tall picture; above that the text
+    // grows more gently, below it shrinks more gently so it stays readable.
+    function applySubtitleFontSize() : void {
+        const base = SubtitlesSettings.fontSize
+        const dims = mpv.getProperty("osd-dimensions")
+        const videoHeight = dims ? dims.h - dims.mt - dims.mb : 0
+        let size = base
+        if (videoHeight > 0) {
+            const factor = Math.min(1.6, Math.max(0.5, Math.pow(720 / videoHeight, 0.35)))
+            size = Math.round(base * factor)
+        }
+        mpv.setProperty(MpvProperties.SubtitleFontSize, size)
+    }
+
+    Timer {
+        id: subtitleSizeTimer
+
+        // wait for mpv to settle on the new picture size before measuring it
+        interval: 150
+        onTriggered: appWindow.applySubtitleFontSize()
+    }
+
+    Connections {
+        target: mpv
+        function onWidthChanged() { subtitleSizeTimer.restart() }
+        function onHeightChanged() { subtitleSizeTimer.restart() }
+        function onVideoWidthChanged() { subtitleSizeTimer.restart() }
+        function onVideoHeightChanged() { subtitleSizeTimer.restart() }
+        function onVideoReconfig() { subtitleSizeTimer.restart() }
+    }
+
+    // Natsuna: clicking another window doesn't reach Qt's popups, so menus
+    // used to stay open (and keep the auto-hide controls up). Close them all
+    // as soon as another application becomes active.
+    function closeAllMenus() : void {
+        for (const bar of [menuBarLoader.item, overlayMenuBar]) {
+            const menus = bar?.menus
+            if (!menus) {
+                continue
+            }
+            for (let i = 0; i < menus.length; ++i) {
+                menus[i].dismiss()
+            }
+        }
+        headerItem.closeMenus()
+        overlayHeader.closeMenus()
+        footerItem.closeMenus()
+        mpvContextMenuLoader.close()
+    }
+
+    Connections {
+        target: Qt.application
+        function onStateChanged() {
+            if (Qt.application.state !== Qt.ApplicationActive) {
+                appWindow.closeAllMenus()
             }
         }
     }

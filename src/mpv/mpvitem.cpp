@@ -163,6 +163,10 @@ void MpvItem::initProperties()
     setProperty(MpvProperties::self()->SubtitleAssForceMargins, SubtitlesSettings::allowOnBlackBorders());
     setProperty(MpvProperties::self()->SubtitleFont, SubtitlesSettings::fontFamily());
     setProperty(MpvProperties::self()->SubtitleFontSize, SubtitlesSettings::fontSize());
+    // Natsuna: size subtitles relative to the video picture, not the window, so a
+    // tall or wide window doesn't make them huge (the QML side also eases the
+    // growth on large screens, see Main.qml applySubtitleFontSize)
+    setProperty(u"sub-scale-with-window"_s, false);
     setProperty(MpvProperties::self()->SubtitleColor, SubtitlesSettings::fontColor());
     // Natsuna: the shadow / background box color with its opacity setting applied
     QColor shadowColor(SubtitlesSettings::shadowColor());

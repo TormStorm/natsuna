@@ -28,6 +28,13 @@ ToolBar {
     // Natsuna: true for the copy drawn over the video in auto-hide mode
     property bool inOverlay: false
 
+    // Natsuna: close any menu opened from the toolbar
+    function closeMenus() : void {
+        subtitleMenu.dismiss()
+        audioMenu.dismiss()
+        headerHamburger.isOpen = false
+    }
+
     position: ToolBar.Header
     state: {
         const mainWindow = Window.window as Main
@@ -50,6 +57,8 @@ ToolBar {
         width: parent.width
 
         HamburgerMenu {
+            id: headerHamburger
+
             m_mpv: root.m_mpv
             m_settingsLoader: root.m_settingsLoader
             m_menuBarLoader: root.m_menuBarLoader

@@ -24,6 +24,10 @@ Natsuna installs alongside Haruna. It has its own name, app-menu entry, binary (
 
 **Fullscreen controller.** In fullscreen the controls shrink to a smaller box centred at the bottom edge of the screen. It appears when you move the mouse and fades out shortly after the mouse stops.
 
+**Subtitles that fit.** Subtitles are sized relative to the video picture rather than the window, so a tall or oddly shaped window doesn't blow them up, and they grow more gently on large screens and in fullscreen. Defaults: Liberation Sans 50, white text on a 50% black background box.
+
+**Menus close when you click elsewhere.** An open menu closes as soon as you click another window, the same as clicking the video.
+
 **File title.** When a file starts, its name is shown for a few seconds at the bottom of the video, with no background box.
 
 **Simpler menus.** One menu bar in a familiar order:

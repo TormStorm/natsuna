@@ -17,7 +17,7 @@
       <default>default</default>
     </entry>
     <entry name="PlaybackBehavior" type="String">
-      <default>RepeatPlaylist</default>
+      <default>StopAfterLast</default>
     </entry>
     <entry name="RandomPlayback" type="bool">
       <default>false</default>

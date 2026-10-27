@@ -57,6 +57,11 @@ Item {
     // The floating controller sits flush against the bottom of the screen
     implicitHeight: footer.height
 
+    // Close the hamburger menu (used when the app loses focus)
+    function closeMenus() : void {
+        hamburgerMenu.isOpen = false
+    }
+
     // Show the floating controls (they hide again after hideDelay)
     function showControls() : void {
         footer.showFloating()

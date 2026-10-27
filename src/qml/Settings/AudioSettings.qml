@@ -109,6 +109,7 @@ SettingsBasePage {
 
             PrefRow {
                 title: KI18n.i18nc("@label:listbox", "Mode")
+                description: KI18n.i18nc("@info", "Evens out loudness using volume info stored in music files, so quiet and loud songs play at a similar level. Track: per song. Album: keeps an album's own quiet/loud differences.")
                 help: KI18n.i18nc("@info:tooltip", "Adjust volume gain according to <i>replaygain</i> " +
                                   "values stored in the file metadata. If set to album gain, " +
                                   "apply album gain if present and fallback to track gain otherwise.")
@@ -161,6 +162,7 @@ SettingsBasePage {
                 id: preamp
 
                 title: KI18n.i18nc("@label:spinbox", "Preamp (dB)")
+                description: KI18n.i18nc("@info", "Extra boost (or cut) added on top of the replay gain adjustment.")
 
                 function setPreamp(val) {
                     AudioSettings.replayGainPreamp = val
@@ -184,6 +186,7 @@ SettingsBasePage {
                 id: fallback
 
                 title: KI18n.i18nc("@label:spinbox", "Fallback (dB)")
+                description: KI18n.i18nc("@info", "Volume change for files without replay gain info. Also applied to every file while Mode is Disabled, so leave it at 0 unless you want that.")
                 help: KI18n.i18nc("@info:tooltip", "Gain in dB to apply if the file has no replay gain tags.<br><br>" +
                                   "This setting is in effect only when:<br>" +
                                   "- the replaygain setting is disabled<br>" +
