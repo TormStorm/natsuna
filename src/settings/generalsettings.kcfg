@@ -21,7 +21,7 @@
       <default>true</default>
     </entry>
     <entry name="ShowChapterMarkers" type="bool">
-      <default>true</default>
+      <default>false</default>
     </entry>
     <entry name="ColorScheme" type="String"></entry>
     <entry name="GuiStyle" type="String">
