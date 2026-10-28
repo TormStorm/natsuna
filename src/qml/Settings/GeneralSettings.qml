@@ -185,6 +185,37 @@ SettingsBasePage {
             }
 
             PrefRow {
+                title: KI18n.i18nc("@label:listbox", "Top panel position")
+                description: KI18n.i18nc("@info", "Where the menu bar and toolbar appear in auto-hide mode.")
+                indented: true
+                enabled: GeneralSettings.autoHideInterface
+
+                ComboBox {
+                    textRole: "text"
+                    valueRole: "value"
+                    model: ListModel {
+                        id: topPanelPositionModel
+                    }
+                    Layout.preferredWidth: PrefStyle.fieldWidth
+                    Component.onCompleted: {
+                        topPanelPositionModel.append({
+                            text: KI18n.i18nc("@item:listbox auto-hide top panel position", "Centered"),
+                            value: "center"
+                        })
+                        topPanelPositionModel.append({
+                            text: KI18n.i18nc("@item:listbox auto-hide top panel position", "Left"),
+                            value: "left"
+                        })
+                        currentIndex = Math.max(0, indexOfValue(GeneralSettings.autoHideTopPanelPosition))
+                    }
+                    onActivated: function(index) {
+                        GeneralSettings.autoHideTopPanelPosition = model.get(index).value
+                        GeneralSettings.save()
+                    }
+                }
+            }
+
+            PrefRow {
                 title: KI18n.i18nc("@label:listbox", "Control bar")
                 description: KI18n.i18nc("@info", "“Floating” draws the controls over the video and hides them when the mouse is still.")
 

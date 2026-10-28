@@ -389,12 +389,20 @@ ApplicationWindow {
                                        && (GeneralSettings.showMenuBar || GeneralSettings.showHeader)
         readonly property bool busy: topBarHover.hovered || overlayMenuBar.anyMenuOpen
 
+        // the panel hugs its contents, with even padding on every side
+        readonly property real sidePadding: Kirigami.Units.largeSpacing
+        readonly property real verticalPadding: Kirigami.Units.smallSpacing
+        readonly property real edgeMargin: Kirigami.Units.largeSpacing
+        readonly property real contentWidth: Math.max(overlayMenuBar.visible ? overlayMenuBar.implicitWidth : 0,
+                                                     overlayHeader.visible ? overlayHeader.implicitWidth : 0)
+
         anchors.top: appWindow.contentItem.top
-        anchors.horizontalCenter: appWindow.contentItem.horizontalCenter
-        // same width as the floating control bar at the bottom
-        width: Math.min(appWindow.contentItem.width - Kirigami.Units.largeSpacing * (appWindow.contentItem.width < 600 ? 2 : 4),
-                        Kirigami.Units.gridUnit * 45)
-        height: topBarColumn.implicitHeight + Kirigami.Units.smallSpacing
+        // centred by default, or near the left edge like the normal menu bar
+        x: GeneralSettings.autoHideTopPanelPosition === "left"
+           ? edgeMargin
+           : (appWindow.contentItem.width - width) / 2
+        width: Math.min(contentWidth + sidePadding * 2, appWindow.contentItem.width - edgeMargin * 2)
+        height: topBarColumn.implicitHeight + verticalPadding * 2
         visible: active && opacity > 0
         opacity: active && footerItem.controlsShown ? 1 : 0
 
@@ -439,8 +447,9 @@ ApplicationWindow {
                 left: parent.left
                 right: parent.right
                 top: parent.top
-                leftMargin: Kirigami.Units.smallSpacing
-                rightMargin: Kirigami.Units.smallSpacing
+                leftMargin: autoHideTopBar.sidePadding
+                rightMargin: autoHideTopBar.sidePadding
+                topMargin: autoHideTopBar.verticalPadding
             }
 
             MenuBar {

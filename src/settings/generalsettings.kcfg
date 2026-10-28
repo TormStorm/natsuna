@@ -85,6 +85,10 @@
     <entry name="AutoHideInterface" type="bool">
       <default>false</default>
     </entry>
+    <!-- Natsuna: where the auto-hide top panel sits: "center" or "left" -->
+    <entry name="AutoHideTopPanelPosition" type="String">
+      <default>center</default>
+    </entry>
     <entry name="ShowRemainingTime" type="bool">
       <default>false</default>
     </entry>
